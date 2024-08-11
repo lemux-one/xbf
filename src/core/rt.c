@@ -1,26 +1,23 @@
+#include "../xsc/bool.h"
 #include "./rt.h"
 #include <stdio.h>
 
 unsigned int counter;
+char target, pair;
 
-char *findClosing(char* code) {
+char *jump(char* code, bool backwards) {
   counter = 0;
-  for(;;) {
-    ++code;
-    if (*code == '[') ++counter;
-    else if (*code == ']') {
-      if (counter == 0) return code;
-      --counter;
-    }
+  if (backwards) {
+    target = '[';
+    pair = ']';
+  } else {
+    target = ']';
+    pair = '[';
   }
-}
-
-char *findOpening(char* code) {
-  counter = 0;
   for(;;) {
-    --code;
-    if (*code == ']') ++counter;
-    else if (*code == '[') {
+    if (backwards) --code; else ++code;
+    if (*code == pair) ++counter;
+    else if (*code == target) {
       if (counter == 0) return code;
       --counter;
     }
@@ -37,9 +34,8 @@ void exec(char* code, char cells[]) {
       case '-': (cells[pos])--; break;
       case '>': ++pos; break;
       case '<': --pos; break;
-      case '[': if (cells[pos] == 0) code = findClosing(code); break;
-      case ']': if (cells[pos] != 0) code = findOpening(code); break;
-      default: printf("ERR: '%c'", *code);
+      case '[': if (cells[pos] == 0) code = jump(code, false); break;
+      case ']': if (cells[pos] != 0) code = jump(code, true); break;
     }
     ++code;
   }
